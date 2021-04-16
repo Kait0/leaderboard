@@ -36,7 +36,8 @@ class ResultOutputProvider(object):
         self._end_time = time.strftime('%Y-%m-%d %H:%M:%S',
                                        time.localtime(self._data.end_system_time))
 
-        print(self.create_output_text())
+        res = self.create_output_text()
+        print(res.encode("utf-8"))
 
     def create_output_text(self):
         """
