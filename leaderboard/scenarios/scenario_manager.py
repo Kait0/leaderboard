@@ -14,6 +14,7 @@ from __future__ import print_function
 import signal
 import sys
 import time
+import os
 
 import py_trees
 import carla
@@ -84,6 +85,7 @@ class ScenarioManager(object):
         Terminate scenario ticking when receiving a signal interrupt
         """
         self._running = False
+        os._exit(-1)
 
     def cleanup(self):
         """

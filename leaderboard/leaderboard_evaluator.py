@@ -23,6 +23,7 @@ import pkg_resources
 import sys
 import carla
 import signal
+import numpy as np
 
 from srunner.scenariomanager.carla_data_provider import *
 from srunner.scenariomanager.timer import GameTime
@@ -106,6 +107,7 @@ class LeaderboardEvaluator(object):
         Terminate scenario ticking when receiving a signal interrupt
         """
         if self._agent_watchdog and not self._agent_watchdog.get_status():
+            os._exit(-1)
             raise RuntimeError("Timeout: Agent took too long to setup")
         elif self.manager:
             self.manager.signal_handler(signum, frame)
@@ -356,9 +358,11 @@ class LeaderboardEvaluator(object):
 
             crash_message = "Simulation crashed"
             entry_status = "Crashed"
+            sys.exit(-1)
 
         # Stop the scenario
         try:
+            self._agent_watchdog.start()
             print("\033[1m> Stopping the route\033[0m")
             self.manager.stop_scenario()
             self._register_statistics(config, args.checkpoint, entry_status, crash_message)
@@ -370,6 +374,7 @@ class LeaderboardEvaluator(object):
             scenario.remove_all_actors()
 
             self._cleanup()
+            self._agent_watchdog.stop()
 
         except Exception as e:
             print("\n\033[91mFailed to stop the scenario, the statistics might be empty:")
@@ -377,6 +382,7 @@ class LeaderboardEvaluator(object):
             traceback.print_exc()
 
             crash_message = "Simulation crashed"
+            sys.exit(-1)
 
         if crash_message == "Simulation crashed":
             sys.exit(-1)
@@ -453,14 +459,21 @@ def main():
 
     statistics_manager = StatisticsManager()
 
+    np.save("resume.npy", np.array(arguments.resume))
     try:
         leaderboard_evaluator = LeaderboardEvaluator(arguments, statistics_manager)
         leaderboard_evaluator.run(arguments)
+
+        # 12345 Marks successfull completion of the program
+        del leaderboard_evaluator
+        sys.exit(12345)
 
     except Exception as e:
         traceback.print_exc()
     finally:
         del leaderboard_evaluator
+
+
 
 
 if __name__ == '__main__':
