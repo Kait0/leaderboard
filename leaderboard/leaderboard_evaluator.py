@@ -466,7 +466,7 @@ def main():
 
         # 12345 Marks successfull completion of the program
         del leaderboard_evaluator
-        sys.exit(12345)
+        os._exit(12345)
 
     except Exception as e:
         traceback.print_exc()
