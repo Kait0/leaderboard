@@ -86,7 +86,7 @@ def prettify_json(args):
         output += tabulate(list_statistics, tablefmt=args.format)
 
     if args.output:
-        with open(args.output, 'w') as fd:
+        with open(args.output, 'w', encoding="utf-8") as fd:
             fd.write(output)
     else:
         print(output)
