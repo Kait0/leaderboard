@@ -123,7 +123,7 @@ class LeaderboardEvaluator(object):
         if hasattr(self, 'world') and self.world:
             del self.world
 
-    def _cleanup(self):
+    def _cleanup(self, final_status_message=""):
         """
         Remove and destroy all actors
         """
@@ -153,7 +153,7 @@ class LeaderboardEvaluator(object):
             self._agent_watchdog.stop()
 
         if hasattr(self, 'agent_instance') and self.agent_instance:
-            self.agent_instance.destroy()
+            self.agent_instance.destroy(final_status_message)
             self.agent_instance = None
 
         if hasattr(self, 'statistics_manager') and self.statistics_manager:
@@ -241,6 +241,8 @@ class LeaderboardEvaluator(object):
         self.statistics_manager.save_record(current_stats_record, config.index, checkpoint)
         self.statistics_manager.save_entry_status(entry_status, False, checkpoint)
 
+        return current_stats_record.status
+
     def _load_and_run_scenario(self, args, config):
         """
         Load and run the scenario given by config.
@@ -285,8 +287,8 @@ class LeaderboardEvaluator(object):
             crash_message = "Agent's sensors were invalid"
             entry_status = "Rejected"
 
-            self._register_statistics(config, args.checkpoint, entry_status, crash_message)
-            self._cleanup()
+            finish_status = self._register_statistics(config, args.checkpoint, entry_status, crash_message)
+            self._cleanup(final_status_message=finish_status)
             sys.exit(-1)
 
         except Exception as e:
@@ -297,8 +299,8 @@ class LeaderboardEvaluator(object):
 
             crash_message = "Agent couldn't be set up"
 
-            self._register_statistics(config, args.checkpoint, entry_status, crash_message)
-            self._cleanup()
+            finish_status = self._register_statistics(config, args.checkpoint, entry_status, crash_message)
+            self._cleanup(final_status_message=finish_status)
             return
 
         print("\033[1m> Loading the world\033[0m")
@@ -329,12 +331,12 @@ class LeaderboardEvaluator(object):
             crash_message = "Simulation crashed"
             entry_status = "Crashed"
 
-            self._register_statistics(config, args.checkpoint, entry_status, crash_message)
+            finish_status = self._register_statistics(config, args.checkpoint, entry_status, crash_message)
 
             if args.record:
                 self.client.stop_recorder()
 
-            self._cleanup()
+            self._cleanup(final_status_message=finish_status)
             sys.exit(-1)
 
         print("\033[1m> Running the route\033[0m")
@@ -365,7 +367,7 @@ class LeaderboardEvaluator(object):
             self._agent_watchdog.start()
             print("\033[1m> Stopping the route\033[0m")
             self.manager.stop_scenario()
-            self._register_statistics(config, args.checkpoint, entry_status, crash_message)
+            finish_status = self._register_statistics(config, args.checkpoint, entry_status, crash_message)
 
             if args.record:
                 self.client.stop_recorder()
@@ -373,7 +375,7 @@ class LeaderboardEvaluator(object):
             # Remove all actors
             scenario.remove_all_actors()
 
-            self._cleanup()
+            self._cleanup(final_status_message=finish_status)
             self._agent_watchdog.stop()
 
         except Exception as e:
