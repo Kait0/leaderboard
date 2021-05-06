@@ -137,12 +137,12 @@ class AgentWrapper(object):
                                                      yaw=sensor_spec['yaw'])
 
                 elif sensor_spec['type'].startswith('sensor.other.gnss'):
-                    bp.set_attribute('noise_alt_stddev', str(0.000005))
-                    bp.set_attribute('noise_lat_stddev', str(0.000005))
-                    bp.set_attribute('noise_lon_stddev', str(0.000005))
-                    bp.set_attribute('noise_alt_bias', str(0.0))
-                    bp.set_attribute('noise_lat_bias', str(0.0))
-                    bp.set_attribute('noise_lon_bias', str(0.0))
+                    bp.set_attribute('noise_alt_stddev', str(sensor_spec['noise_alt_stddev'])) #Default was 0.000005 on all 3
+                    bp.set_attribute('noise_lat_stddev', str(sensor_spec['noise_lat_stddev']))
+                    bp.set_attribute('noise_lon_stddev', str(sensor_spec['noise_lon_stddev']))
+                    bp.set_attribute('noise_alt_bias', str(sensor_spec['noise_alt_bias'])) # Default was 0.0 on all
+                    bp.set_attribute('noise_lat_bias', str(sensor_spec['noise_lat_bias']))
+                    bp.set_attribute('noise_lon_bias', str(sensor_spec['noise_lon_bias']))
 
                     sensor_location = carla.Location(x=sensor_spec['x'],
                                                      y=sensor_spec['y'],
@@ -150,12 +150,12 @@ class AgentWrapper(object):
                     sensor_rotation = carla.Rotation()
 
                 elif sensor_spec['type'].startswith('sensor.other.imu'):
-                    bp.set_attribute('noise_accel_stddev_x', str(0.001))
-                    bp.set_attribute('noise_accel_stddev_y', str(0.001))
-                    bp.set_attribute('noise_accel_stddev_z', str(0.015))
-                    bp.set_attribute('noise_gyro_stddev_x', str(0.001))
-                    bp.set_attribute('noise_gyro_stddev_y', str(0.001))
-                    bp.set_attribute('noise_gyro_stddev_z', str(0.001))
+                    bp.set_attribute('noise_accel_stddev_x', str(sensor_spec['noise_accel_stddev_x'])) #Default was 0.001
+                    bp.set_attribute('noise_accel_stddev_y', str(sensor_spec['noise_accel_stddev_y'])) #Default was 0.001
+                    bp.set_attribute('noise_accel_stddev_z', str(sensor_spec['noise_accel_stddev_z'])) #Default was 0.015
+                    bp.set_attribute('noise_gyro_stddev_x', str(sensor_spec['noise_gyro_stddev_x']))  #Default was 0.001
+                    bp.set_attribute('noise_gyro_stddev_y', str(sensor_spec['noise_gyro_stddev_y']))  #Default was 0.001
+                    bp.set_attribute('noise_gyro_stddev_z', str(sensor_spec['noise_gyro_stddev_z']))  #Default was 0.001
 
                     sensor_location = carla.Location(x=sensor_spec['x'],
                                                      y=sensor_spec['y'],
