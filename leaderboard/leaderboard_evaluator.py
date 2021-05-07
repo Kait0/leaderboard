@@ -353,6 +353,15 @@ class LeaderboardEvaluator(object):
 
             crash_message = "Agent crashed"
 
+        except RuntimeError as e:
+            print("\n\033[91mError during the simulation, Sensor did not give data:")
+            print("> {}\033[0m\n".format(e))
+            traceback.print_exc()
+
+            crash_message = "Simulation crashed"
+            entry_status = "Crashed"
+            os._exit(-1)
+
         except Exception as e:
             print("\n\033[91mError during the simulation:")
             print("> {}\033[0m\n".format(e))
@@ -360,7 +369,7 @@ class LeaderboardEvaluator(object):
 
             crash_message = "Simulation crashed"
             entry_status = "Crashed"
-            sys.exit(-1)
+            os._exit(-1)
 
         # Stop the scenario
         try:
