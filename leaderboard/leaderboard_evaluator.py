@@ -263,7 +263,7 @@ class LeaderboardEvaluator(object):
         try:
             self._agent_watchdog.start()
             agent_class_name = getattr(self.module_agent, 'get_entry_point')()
-            self.agent_instance = getattr(self.module_agent, agent_class_name)(args.agent_config)
+            self.agent_instance = getattr(self.module_agent, agent_class_name)(args.agent_config, args.ID, args.is_training, args.resume)
             config.agent = self.agent_instance
 
             # Check and store the sensors
@@ -465,12 +465,15 @@ def main():
     parser.add_argument("--checkpoint", type=str,
                         default='./simulation_results.json',
                         help="Path to checkpoint used for saving statistics and resuming")
+    parser.add_argument('--ID', type=int, default=0, help='Identification number of the agent to be trained or evaluated')
+    parser.add_argument('--training', dest='is_training', action='store_true', help='Puts the agent in training mode')
+    parser.add_argument('--evaluation', dest='is_training', action='store_false', help='Puts the agent in evaluation mode')
+    parser.set_defaults(is_training=True)
 
     arguments = parser.parse_args()
 
     statistics_manager = StatisticsManager()
 
-    np.save("resume.npy", np.array(arguments.resume))
     try:
         leaderboard_evaluator = LeaderboardEvaluator(arguments, statistics_manager)
         leaderboard_evaluator.run(arguments)
