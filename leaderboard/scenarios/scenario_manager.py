@@ -113,7 +113,7 @@ class ScenarioManager(object):
         self.repetition_number = rep_number
 
         # To print the scenario tree uncomment the next line
-        # py_trees.display.render_dot_tree(self.scenario_tree)
+        # py_trees.display.render_dot_tree(self.scenario_tree) #TODO test this
 
         self._agent.setup_sensors(self.ego_vehicles[0], self._debug_mode)
 

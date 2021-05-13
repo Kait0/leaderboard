@@ -195,7 +195,7 @@ class RouteScenario(BasicScenario):
                                                              self.sampled_scenarios_definitions,
                                                              scenarios_per_tick=10,
                                                              timeout=self.timeout,
-                                                             debug_mode=debug_mode>1)
+                                                             debug_mode=debug_mode>0) #TODO 1> seems wrong why not larger 0?
 
         super(RouteScenario, self).__init__(name=config.name,
                                             ego_vehicles=[ego_vehicle],
@@ -395,7 +395,7 @@ class RouteScenario(BasicScenario):
             scenario_configuration.route_var_name = route_var_name
             try:
                 scenario_instance = scenario_class(world, [ego_vehicle], scenario_configuration,
-                                                   criteria_enable=False, timeout=timeout)
+                                                   criteria_enable=False, timeout=timeout) #TODO add debug mode
                 # Do a tick every once in a while to avoid spawning everything at the same time
                 if scenario_number % scenarios_per_tick == 0:
                     if CarlaDataProvider.is_sync_mode():
