@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from dictor import dictor
+import random
 
 import copy
 
@@ -25,6 +26,10 @@ class RouteIndexer():
 
         self.n_routes = len(route_configurations)
         self.total = self.n_routes*self._repetitions
+
+        #Shuffle routes so I can more easily copy paste route files together without introducing artifacts
+        random.seed(0) #Seeded so that it's stable and we can resume training if necceessary.
+        random.shuffle(route_configurations)
 
         for i, config in enumerate(route_configurations):
             for repetition in range(repetitions):

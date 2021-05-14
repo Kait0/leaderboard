@@ -336,12 +336,17 @@ class RouteScenario(BasicScenario):
 
             return selected_scenario
 
+        def select_scenario_randomly(list_scenarios):
+            # randomly select a scenario
+            return rgn.choice(list_scenarios)
+
+
         # The idea is to randomly sample a scenario per trigger position.
         sampled_scenarios = []
         for trigger in potential_scenarios_definitions.keys():
             possible_scenarios = potential_scenarios_definitions[trigger]
 
-            scenario_choice = select_scenario(possible_scenarios)
+            scenario_choice = select_scenario_randomly(possible_scenarios)
             del possible_scenarios[possible_scenarios.index(scenario_choice)]
             # We keep sampling and testing if this position is present on any of the scenarios.
             while position_sampled(scenario_choice, sampled_scenarios):
