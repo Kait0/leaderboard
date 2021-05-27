@@ -20,7 +20,7 @@ from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from leaderboard.envs.sensor_interface import CallBack, OpenDriveMapReader, SpeedometerReader, SensorConfigurationInvalid
 from leaderboard.autoagents.autonomous_agent import Track
 
-MAX_ALLOWED_RADIUS_SENSOR = 10.0 #NOTE from 3 to 10 so that I can have a 3rd person camera for debugging
+MAX_ALLOWED_RADIUS_SENSOR = 100.0 #NOTE from 3 to 10 so that I can have a 3rd person camera for debugging
 
 SENSORS_LIMITS = {
     'sensor.camera.rgb': 4,
@@ -29,7 +29,9 @@ SENSORS_LIMITS = {
     'sensor.other.gnss': 1,
     'sensor.other.imu': 1,
     'sensor.opendrive_map': 1,
-    'sensor.speedometer': 1
+    'sensor.speedometer': 1,
+    'sensor.camera.semantic_segmentation': 10, #Note added for priviledged autopilot
+    'sensor.camera.depth': 10,
 }
 
 
@@ -56,7 +58,9 @@ class AgentWrapper(object):
         'sensor.lidar.ray_cast',
         'sensor.other.radar',
         'sensor.other.gnss',
-        'sensor.other.imu'
+        'sensor.other.imu',
+        'sensor.camera.semantic_segmentation', #NOTE the following were added for the priviledged auto agent
+        'sensor.camera.depth',
     ]
 
     _agent = None
@@ -93,7 +97,27 @@ class AgentWrapper(object):
             # These are the sensors spawned on the carla world
             else:
                 bp = bp_library.find(str(sensor_spec['type']))
-                if sensor_spec['type'].startswith('sensor.camera'):
+                if sensor_spec['type'].startswith('sensor.camera.semantic_segmentation'):
+                    bp.set_attribute('image_size_x', str(sensor_spec['width']))
+                    bp.set_attribute('image_size_y', str(sensor_spec['height']))
+                    bp.set_attribute('fov', str(sensor_spec['fov']))
+
+                    sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
+                                                     z=sensor_spec['z'])
+                    sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],
+                                                     roll=sensor_spec['roll'],
+                                                     yaw=sensor_spec['yaw'])
+                elif sensor_spec['type'].startswith('sensor.camera.depth'):
+                    bp.set_attribute('image_size_x', str(sensor_spec['width']))
+                    bp.set_attribute('image_size_y', str(sensor_spec['height']))
+                    bp.set_attribute('fov', str(sensor_spec['fov']))
+
+                    sensor_location = carla.Location(x=sensor_spec['x'], y=sensor_spec['y'],
+                                                     z=sensor_spec['z'])
+                    sensor_rotation = carla.Rotation(pitch=sensor_spec['pitch'],
+                                                     roll=sensor_spec['roll'],
+                                                     yaw=sensor_spec['yaw'])
+                elif sensor_spec['type'].startswith('sensor.camera'):
                     bp.set_attribute('image_size_x', str(sensor_spec['width']))
                     bp.set_attribute('image_size_y', str(sensor_spec['height']))
                     bp.set_attribute('fov', str(sensor_spec['fov']))
@@ -137,12 +161,20 @@ class AgentWrapper(object):
                                                      yaw=sensor_spec['yaw'])
 
                 elif sensor_spec['type'].startswith('sensor.other.gnss'):
-                    bp.set_attribute('noise_alt_stddev', str(sensor_spec['noise_alt_stddev'])) #Default was 0.000005 on all 3
-                    bp.set_attribute('noise_lat_stddev', str(sensor_spec['noise_lat_stddev']))
-                    bp.set_attribute('noise_lon_stddev', str(sensor_spec['noise_lon_stddev']))
-                    bp.set_attribute('noise_alt_bias', str(sensor_spec['noise_alt_bias'])) # Default was 0.0 on all
-                    bp.set_attribute('noise_lat_bias', str(sensor_spec['noise_lat_bias']))
-                    bp.set_attribute('noise_lon_bias', str(sensor_spec['noise_lon_bias']))
+                    if 'noise_alt_stddev' in sensor_spec:
+                        bp.set_attribute('noise_alt_stddev', str(sensor_spec['noise_alt_stddev'])) #Default was 0.000005 on all 3
+                        bp.set_attribute('noise_lat_stddev', str(sensor_spec['noise_lat_stddev']))
+                        bp.set_attribute('noise_lon_stddev', str(sensor_spec['noise_lon_stddev']))
+                        bp.set_attribute('noise_alt_bias', str(sensor_spec['noise_alt_bias'])) # Default was 0.0 on all
+                        bp.set_attribute('noise_lat_bias', str(sensor_spec['noise_lat_bias']))
+                        bp.set_attribute('noise_lon_bias', str(sensor_spec['noise_lon_bias']))
+                    else:
+                        # bp.set_attribute('noise_alt_stddev', str(0.000005))
+                        # bp.set_attribute('noise_lat_stddev', str(0.000005))
+                        # bp.set_attribute('noise_lon_stddev', str(0.000005))
+                        bp.set_attribute('noise_alt_bias', str(0.0))
+                        bp.set_attribute('noise_lat_bias', str(0.0))
+                        bp.set_attribute('noise_lon_bias', str(0.0))
 
                     sensor_location = carla.Location(x=sensor_spec['x'],
                                                      y=sensor_spec['y'],
@@ -150,12 +182,20 @@ class AgentWrapper(object):
                     sensor_rotation = carla.Rotation()
 
                 elif sensor_spec['type'].startswith('sensor.other.imu'):
-                    bp.set_attribute('noise_accel_stddev_x', str(sensor_spec['noise_accel_stddev_x'])) #Default was 0.001
-                    bp.set_attribute('noise_accel_stddev_y', str(sensor_spec['noise_accel_stddev_y'])) #Default was 0.001
-                    bp.set_attribute('noise_accel_stddev_z', str(sensor_spec['noise_accel_stddev_z'])) #Default was 0.015
-                    bp.set_attribute('noise_gyro_stddev_x', str(sensor_spec['noise_gyro_stddev_x']))  #Default was 0.001
-                    bp.set_attribute('noise_gyro_stddev_y', str(sensor_spec['noise_gyro_stddev_y']))  #Default was 0.001
-                    bp.set_attribute('noise_gyro_stddev_z', str(sensor_spec['noise_gyro_stddev_z']))  #Default was 0.001
+                    if 'noise_accel_stddev_x' in sensor_spec:
+                        bp.set_attribute('noise_accel_stddev_x', str(sensor_spec['noise_accel_stddev_x'])) #Default was 0.001
+                        bp.set_attribute('noise_accel_stddev_y', str(sensor_spec['noise_accel_stddev_y'])) #Default was 0.001
+                        bp.set_attribute('noise_accel_stddev_z', str(sensor_spec['noise_accel_stddev_z'])) #Default was 0.015
+                        bp.set_attribute('noise_gyro_stddev_x', str(sensor_spec['noise_gyro_stddev_x']))  #Default was 0.001
+                        bp.set_attribute('noise_gyro_stddev_y', str(sensor_spec['noise_gyro_stddev_y']))  #Default was 0.001
+                        bp.set_attribute('noise_gyro_stddev_z', str(sensor_spec['noise_gyro_stddev_z']))  #Default was 0.001
+                    else:
+                        bp.set_attribute('noise_accel_stddev_x', str(0.0))
+                        bp.set_attribute('noise_accel_stddev_y', str(0.0))
+                        bp.set_attribute('noise_accel_stddev_z', str(0.0))
+                        bp.set_attribute('noise_gyro_stddev_x', str(0.0))
+                        bp.set_attribute('noise_gyro_stddev_y', str(0.0))
+                        bp.set_attribute('noise_gyro_stddev_z', str(0.0))
 
                     sensor_location = carla.Location(x=sensor_spec['x'],
                                                      y=sensor_spec['y'],

@@ -32,7 +32,7 @@ class MapAgent(BaseAgent):
         self._vehicle = CarlaDataProvider.get_hero_actor()
         self._world = self._vehicle.get_world()
 
-        self._waypoint_planner = RoutePlanner(4.0, 50)
+        self._waypoint_planner = RoutePlanner(3.0, 50) #NOTE changed from 4.0 to 3.0
         self._waypoint_planner.set_route(self._plan_gps_HACK, True)
 
         self._traffic_lights = list()
