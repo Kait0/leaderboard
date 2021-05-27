@@ -44,7 +44,9 @@ sensors_to_icons = {
     'sensor.other.gnss':        'carla_gnss',
     'sensor.other.imu':         'carla_imu',
     'sensor.opendrive_map':     'carla_opendrive_map',
-    'sensor.speedometer':       'carla_speedometer'
+    'sensor.speedometer':       'carla_speedometer',
+    'sensor.camera.semantic_segmentation': 'carla_camera', #NOTE the following were added for the priviledged auto agent
+    'sensor.camera.depth':      'carla_camera',
 }
 
 
