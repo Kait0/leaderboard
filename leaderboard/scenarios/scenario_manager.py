@@ -176,7 +176,7 @@ class ScenarioManager(object):
 
             spectator = CarlaDataProvider.get_world().get_spectator()
             ego_trans = self.ego_vehicles[0].get_transform()
-            location = ego_trans.transform(carla.Location(x=-6.0, z=2.3))
+            location = ego_trans.transform(carla.Location(x=-3.0, z=3.3))
             # location = ego_trans.transform(carla.Location(x=1.3, z=2.3)) #Ego perspective
             # spectator.set_transform(carla.Transform(ego_trans.location + carla.Location(z=50),
             #                                            carla.Rotation(pitch=-90)))
